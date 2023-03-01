@@ -25,11 +25,27 @@ class _PdfState extends State<PdfApp> {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: createMaterialColor(Color(0xFFF15A29))),
       home: Scaffold(
-        floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              addNewPage();
-            },
-            child: Icon(Icons.add_to_photos_rounded)),
+        floatingActionButton: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: FloatingActionButton(
+                  onPressed: () {
+                    addNewPage();
+                  },
+                  child: Icon(Icons.add_to_photos_rounded)),
+            ),
+            FloatingActionButton(
+                onPressed: () {
+                  generatePdf();
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return viewPdf();
+                  }));
+                },
+                child: Icon(Icons.check))
+          ],
+        ),
         body: SingleChildScrollView(
             child: Column(
           children: [
@@ -63,9 +79,11 @@ class _PdfState extends State<PdfApp> {
                     // ignore: prefer_const_literals_to_create_immutables
                     children: [
                       Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.all(10),
                         child: TextFormField(
                             decoration: InputDecoration(
+                                floatingLabelBehavior:
+                                    FloatingLabelBehavior.always,
                                 labelText: 'Digite aqui o título da página.'),
                             controller: titlePdf),
                       ),
@@ -81,24 +99,6 @@ class _PdfState extends State<PdfApp> {
                             maxLines: 30,
                             maxLength: 3800,
                             controller: inputPdf),
-                      ),
-                      Container(
-                        height: 25,
-                        width: 80,
-                        color: Color(0xFFF15A29),
-                        child: TextButton(
-                            onPressed: () {
-                              generatePdf();
-                              Navigator.push(context,
-                                  MaterialPageRoute(builder: (context) {
-                                return viewPdf();
-                              }));
-                            },
-                            child: const Text(
-                              'Gerar PDF',
-                              style: TextStyle(
-                                  color: Color.fromARGB(255, 255, 255, 255)),
-                            )),
                       ),
                     ],
                   ),
