@@ -4,6 +4,8 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
+import 'entities/page_item.dart';
+
 class PdfApp extends StatefulWidget {
   const PdfApp({super.key});
 
@@ -14,6 +16,7 @@ class PdfApp extends StatefulWidget {
 class _PdfState extends State<PdfApp> {
   final TextEditingController inputPdf = TextEditingController();
   final TextEditingController titlePdf = TextEditingController();
+  final List<PageItem> pageItems = <PageItem>[];
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +27,7 @@ class _PdfState extends State<PdfApp> {
       home: Scaffold(
         floatingActionButton: FloatingActionButton(
             onPressed: () {
-              addPage();
+              addNewPage();
             },
             child: Icon(Icons.add_to_photos_rounded)),
         body: SingleChildScrollView(
@@ -108,22 +111,22 @@ class _PdfState extends State<PdfApp> {
   }
 
   Future<Uint8List> generatePdf() async {
-    var textPdf = inputPdf.text;
-    var title = titlePdf.text;
     final pdf = pw.Document();
 
-    pdf.addPage(pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        build: (pw.Context context) {
-          return pw.Center(
-            child: pw.Column(children: [
-              pw.Text(title),
-              pw.SizedBox(height: 15),
-              pw.Text(textPdf, textAlign: pw.TextAlign.justify),
-            ]),
-          );
-        }));
-    // ignore: unused_local_variable
+    for (var item in pageItems) {
+      pdf.addPage(pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          build: (pw.Context context) {
+            return pw.Center(
+              child: pw.Column(children: [
+                pw.Text(item.title),
+                pw.SizedBox(height: 15),
+                pw.Text(item.text, textAlign: pw.TextAlign.justify),
+              ]),
+            );
+          }));
+    }
+
     return await pdf.save();
   }
 
@@ -142,9 +145,13 @@ class _PdfState extends State<PdfApp> {
         build: (format) => generatePdf());
   }
 
-  void addPage() {
-    List<String> pagesToAdd;
-    pagesToAdd.hash('a');
+  void addNewPage() {
+    PageItem newPageItem = PageItem();
+    newPageItem.title = titlePdf.text;
+    newPageItem.text = inputPdf.text;
+    pageItems.add(newPageItem);
+    titlePdf.text = '';
+    inputPdf.text = '';
   }
 
   MaterialColor createMaterialColor(Color color) {
