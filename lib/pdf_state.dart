@@ -50,9 +50,9 @@ class _PdfState extends State<PdfApp> {
                   ),
                 ),
                 Align(
-                  alignment: Alignment.centerLeft,
+                  alignment: Alignment.center,
                   child: Container(
-                    color: Color.fromARGB(255, 170, 1, 1),
+                    color: Color(0xFFF15A29),
                     width: 500,
                     height: 3,
                   ),
@@ -62,25 +62,26 @@ class _PdfState extends State<PdfApp> {
                   child: Column(
                     // ignore: prefer_const_literals_to_create_immutables
                     children: [
-                      TextFormField(
-                          decoration: InputDecoration(
-                              labelText: 'Digite aqui o texto para o pdf.'),
-                          controller: titlePdf),
-                      const Padding(
-                        padding: EdgeInsets.only(top: 15, bottom: 5),
-                        child: Text(
-                          'Digite abaixo o texto para o PDF',
-                          style: TextStyle(fontSize: 20),
-                        ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextFormField(
+                            decoration: InputDecoration(
+                                labelText: 'Digite aqui o título da página.'),
+                            controller: titlePdf),
                       ),
-                      TextFormField(
-                          keyboardType: TextInputType.multiline,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                          ),
-                          maxLines: 30,
-                          maxLength: 3800,
-                          controller: inputPdf),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextFormField(
+                            keyboardType: TextInputType.multiline,
+                            decoration: InputDecoration(
+                                floatingLabelBehavior:
+                                    FloatingLabelBehavior.always,
+                                border: OutlineInputBorder(),
+                                labelText: 'Digite aqui o texto da página.'),
+                            maxLines: 30,
+                            maxLength: 3800,
+                            controller: inputPdf),
+                      ),
                       Container(
                         height: 25,
                         width: 80,
