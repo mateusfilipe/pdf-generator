@@ -15,54 +15,18 @@ class _PdfState extends State<PdfApp> {
   final TextEditingController inputPdf = TextEditingController();
   final TextEditingController titlePdf = TextEditingController();
 
-  int? pages = 0;
-  int? currentPage = 0;
-  bool isReady = false;
-  String errorMessage = '';
-  String? pdfPath = '';
-
-  Future<Uint8List> generatePdf() async {
-    var textPdf = inputPdf.text;
-    var title = titlePdf.text;
-    final pdf = pw.Document();
-
-    pdf.addPage(pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        build: (pw.Context context) {
-          return pw.Center(
-            child: pw.Column(children: [
-              pw.Text(title),
-              pw.SizedBox(height: 15),
-              pw.Text(textPdf, textAlign: pw.TextAlign.justify),
-            ]),
-          );
-        }));
-    // ignore: unused_local_variable
-    return await pdf.save();
-  }
-
-  PdfPreview viewPdf() {
-    return PdfPreview(
-        allowSharing: false,
-        canDebug: false,
-        canChangePageFormat: false,
-        actions: [
-          IconButton(
-              onPressed: () {
-                Navigator.pop(context, true);
-              },
-              icon: Icon(Icons.arrow_back_ios_new))
-        ],
-        build: (format) => generatePdf());
-  }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'PDF Generator',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.blueGrey),
+      theme: ThemeData(primarySwatch: createMaterialColor(Color(0xFFF15A29))),
       home: Scaffold(
+        floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              addPage();
+            },
+            child: Icon(Icons.add_to_photos_rounded)),
         body: SingleChildScrollView(
             child: Column(
           children: [
@@ -114,18 +78,24 @@ class _PdfState extends State<PdfApp> {
                           maxLines: 30,
                           maxLength: 3800,
                           controller: inputPdf),
-                      TextButton(
-                          onPressed: () {
-                            generatePdf();
-                            Navigator.push(context,
-                                MaterialPageRoute(builder: (context) {
-                              return viewPdf();
-                            }));
-                          },
-                          child: const Text(
-                            'Gerar PDF',
-                            style: TextStyle(color: Color(0xFF004A65)),
-                          )),
+                      Container(
+                        height: 25,
+                        width: 80,
+                        color: Color(0xFFF15A29),
+                        child: TextButton(
+                            onPressed: () {
+                              generatePdf();
+                              Navigator.push(context,
+                                  MaterialPageRoute(builder: (context) {
+                                return viewPdf();
+                              }));
+                            },
+                            child: const Text(
+                              'Gerar PDF',
+                              style: TextStyle(
+                                  color: Color.fromARGB(255, 255, 255, 255)),
+                            )),
+                      ),
                     ],
                   ),
                 )
@@ -135,5 +105,64 @@ class _PdfState extends State<PdfApp> {
         )),
       ),
     );
+  }
+
+  Future<Uint8List> generatePdf() async {
+    var textPdf = inputPdf.text;
+    var title = titlePdf.text;
+    final pdf = pw.Document();
+
+    pdf.addPage(pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Center(
+            child: pw.Column(children: [
+              pw.Text(title),
+              pw.SizedBox(height: 15),
+              pw.Text(textPdf, textAlign: pw.TextAlign.justify),
+            ]),
+          );
+        }));
+    // ignore: unused_local_variable
+    return await pdf.save();
+  }
+
+  PdfPreview viewPdf() {
+    return PdfPreview(
+        allowSharing: false,
+        canDebug: false,
+        canChangePageFormat: false,
+        actions: [
+          IconButton(
+              onPressed: () {
+                Navigator.pop(context, true);
+              },
+              icon: Icon(Icons.arrow_back_ios_new))
+        ],
+        build: (format) => generatePdf());
+  }
+
+  void addPage() {
+    List<String> pagesToAdd;
+    pagesToAdd.hash('a');
+  }
+
+  MaterialColor createMaterialColor(Color color) {
+    List strengths = <double>[.05];
+    Map<int, Color> swatch = {};
+    final int r = color.red, g = color.green, b = color.blue;
+    for (int i = 1; i < 10; i++) {
+      strengths.add(0.1 * i);
+    }
+    for (var strength in strengths) {
+      final double ds = 0.5 - strength;
+      swatch[(strength * 1000).round()] = Color.fromRGBO(
+        r + ((ds < 0 ? r : (255 - r)) * ds).round(),
+        g + ((ds < 0 ? g : (255 - g)) * ds).round(),
+        b + ((ds < 0 ? b : (255 - b)) * ds).round(),
+        1,
+      );
+    }
+    return MaterialColor(color.value, swatch);
   }
 }
