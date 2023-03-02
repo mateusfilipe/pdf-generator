@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:pdf_generator/utilities/utils.dart';
 import 'package:printing/printing.dart';
 
 import 'entities/page_item.dart';
@@ -17,6 +18,7 @@ class _PdfState extends State<PdfApp> {
   final TextEditingController inputPdf = TextEditingController();
   final TextEditingController titlePdf = TextEditingController();
   final List<PageItem> pageItems = <PageItem>[];
+  late bool loading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -31,17 +33,42 @@ class _PdfState extends State<PdfApp> {
             Padding(
               padding: const EdgeInsets.only(right: 10),
               child: FloatingActionButton(
+                  heroTag: null,
                   onPressed: () {
+                    setState(() {
+                      loading = true;
+                    });
                     addNewPage();
+                    setState(() {
+                      loading = false;
+                    });
+                    exibirAlertaPersonalizado(context, 'Página Adicionada!',
+                        'Sucesso ao adicionar a página no PDF.');
                   },
                   child: Icon(Icons.add_to_photos_rounded)),
             ),
             FloatingActionButton(
+                heroTag: null,
                 onPressed: () {
-                  generatePdf();
-                  Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    return viewPdf();
-                  }));
+                  if (pageItems.length > 0) {
+                    setState(() {
+                      loading = true;
+                    });
+                    generatePdf();
+                    setState(() {
+                      loading = false;
+                    });
+
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return viewPdf();
+                    }));
+                  } else {
+                    exibirAlertaPersonalizado(
+                        context,
+                        'Nenhuma página adicionada!',
+                        'Adicione pelo menos 1 página antes de gerar o PDF.');
+                  }
                 },
                 child: Icon(Icons.check))
           ],
@@ -49,62 +76,72 @@ class _PdfState extends State<PdfApp> {
         body: SingleChildScrollView(
             child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(50.0),
-              child: Column(children: [
-                // ignore: prefer_const_constructors
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 5),
-                  // ignore: prefer_const_constructors
-                  child: Text(
-                    'PDF Generator',
-                    // ignore: prefer_const_constructors
-                    style: TextStyle(
-                      fontSize: 35,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.center,
-                  child: Container(
-                    color: Color(0xFFF15A29),
-                    width: 500,
-                    height: 3,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 30),
-                  child: Column(
-                    // ignore: prefer_const_literals_to_create_immutables
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(10),
-                        child: TextFormField(
-                            decoration: InputDecoration(
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.always,
-                                labelText: 'Digite aqui o título da página.'),
-                            controller: titlePdf),
+            !loading
+                ? Padding(
+                    padding: const EdgeInsets.all(50.0),
+                    child: Column(children: [
+                      // ignore: prefer_const_constructors
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 5),
+                            // ignore: prefer_const_constructors
+                            child: Text(
+                              'Easy PDF Generator ',
+                              // ignore: prefer_const_constructorscd ..
+                              style: TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          Icon(Icons.file_open),
+                        ],
+                      ),
+                      Align(
+                        alignment: Alignment.center,
+                        child: Container(
+                          color: Color(0xFFF15A29),
+                          width: 500,
+                          height: 3,
+                        ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: TextFormField(
-                            keyboardType: TextInputType.multiline,
-                            decoration: InputDecoration(
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.always,
-                                border: OutlineInputBorder(),
-                                labelText: 'Digite aqui o texto da página.'),
-                            maxLines: 30,
-                            maxLength: 3800,
-                            controller: inputPdf),
-                      ),
-                    ],
-                  ),
-                )
-              ]),
-            )
+                        padding: const EdgeInsets.only(top: 30),
+                        child: Column(
+                          // ignore: prefer_const_literals_to_create_immutables
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: TextFormField(
+                                  decoration: InputDecoration(
+                                      floatingLabelBehavior:
+                                          FloatingLabelBehavior.always,
+                                      labelText:
+                                          'Digite aqui o título da página.'),
+                                  controller: titlePdf),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: TextFormField(
+                                  keyboardType: TextInputType.multiline,
+                                  decoration: InputDecoration(
+                                      floatingLabelBehavior:
+                                          FloatingLabelBehavior.always,
+                                      border: OutlineInputBorder(),
+                                      labelText:
+                                          'Digite aqui o texto da página.'),
+                                  maxLines: 30,
+                                  maxLength: 3800,
+                                  controller: inputPdf),
+                            ),
+                          ],
+                        ),
+                      )
+                    ]),
+                  )
+                : const CircularProgressIndicator()
           ],
         )),
       ),
@@ -127,7 +164,6 @@ class _PdfState extends State<PdfApp> {
             );
           }));
     }
-
     return await pdf.save();
   }
 
@@ -153,24 +189,5 @@ class _PdfState extends State<PdfApp> {
     pageItems.add(newPageItem);
     titlePdf.text = '';
     inputPdf.text = '';
-  }
-
-  MaterialColor createMaterialColor(Color color) {
-    List strengths = <double>[.05];
-    Map<int, Color> swatch = {};
-    final int r = color.red, g = color.green, b = color.blue;
-    for (int i = 1; i < 10; i++) {
-      strengths.add(0.1 * i);
-    }
-    for (var strength in strengths) {
-      final double ds = 0.5 - strength;
-      swatch[(strength * 1000).round()] = Color.fromRGBO(
-        r + ((ds < 0 ? r : (255 - r)) * ds).round(),
-        g + ((ds < 0 ? g : (255 - g)) * ds).round(),
-        b + ((ds < 0 ? b : (255 - b)) * ds).round(),
-        1,
-      );
-    }
-    return MaterialColor(color.value, swatch);
   }
 }
